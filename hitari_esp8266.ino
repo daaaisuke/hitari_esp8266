@@ -37,10 +37,10 @@ void setup() {
   rtcSetup();
   showDate();
   EEPROM.begin(DATASIZE);
-//    if (now.hour() >= SLEEPTIME/*2*/ && now.hour() < BOOTTIME/*21*/) { //スリープさせるかどうか判定
+  //    if (now.hour() >= SLEEPTIME/*2*/ && now.hour() < BOOTTIME/*21*/) { //スリープさせるかどうか判定
   //    スリープ時間だったら
-//      setAlarm();
-//    }
+  //      setAlarm();
+  //    }
 
 }
 
@@ -53,7 +53,7 @@ void loop() {
   if (Lux > 600 && bLux) { //部屋が暗くなったら
     int strand = random(5);
     setFirstDelay(strand);//暗くなってから光り始めるまでの時間
-//    setFirstDelay(2);
+    //    setFirstDelay(2);
     int int_rand = random(100);//インターバル時間決定用乱数1
     int sec_rand = random(20) * 1000;//インターバル時間決定用乱数2
     for (int i = 0; i < DATASIZE - FALL_LIGHT_NUM * 3; i += 3) {//サブのLED用のデータ以外ループ
@@ -67,9 +67,9 @@ void loop() {
     bLux = true;
   }
   delay(100);//照度センサタイミング
-//    if (now.hour() == SLEEPTIME) {//スリープ時間になったら
-//      setAlarm();
-//    }
+  //    if (now.hour() == SLEEPTIME) {//スリープ時間になったら
+  //      setAlarm();
+  //    }
   pixels.setBrightness(0);
   for (int i = 0; i < NUMPIXELS; i++) {//全LEDを落とす
     pixels.setPixelColor(i, 0, 0, 0);
@@ -93,7 +93,7 @@ void ledSetup(int bright) {//リードリレーON&&LED消灯
 
 void rtcSetup() {
   rtc.begin();
-//  rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
 }
 
 
@@ -109,7 +109,7 @@ void setAlarm() {
   while (now.hour() != BOOTTIME) {//bootタイムまでの時間を計算
     now = now + TimeSpan(0, 1, 0, 0);
   }
-  
+
   digitalWrite(RELAY_PIN, LOW);//リードリレーOFF
   DateTime Alarm(now.year(), now.month(), now.day(), now.hour(), 00, 00);
   TimeSpan diff = Alarm - rtc.now();
@@ -167,17 +167,17 @@ void Interval(int r1, int r2) {
 
 void HarfInterval(int r1, int r2) {
   if (r1 < 15) {
-    delay((30000 + r2) / (DATASIZE - (NUMPIXELS - 4) * 3) * 3/2);
+    delay((30000 + r2) / (DATASIZE - (NUMPIXELS - 4) * 3) * 3 / 2);
   } else if (r1 >= 15 && r1 < 50) {
-    delay((50000 + r2) / (DATASIZE - (NUMPIXELS - 4) * 3) * 3/2);
+    delay((50000 + r2) / (DATASIZE - (NUMPIXELS - 4) * 3) * 3 / 2);
   } else if (r1 >= 50 && r1 < 70) {
-    delay((70000 + r2) / (DATASIZE - (NUMPIXELS - 4) * 3) * 3/2);
+    delay((70000 + r2) / (DATASIZE - (NUMPIXELS - 4) * 3) * 3 / 2);
   } else if (r1 >= 70 && r1 < 85) {
-    delay((90000 + r2) / (DATASIZE - (NUMPIXELS - 4) * 3) * 3/2);
+    delay((90000 + r2) / (DATASIZE - (NUMPIXELS - 4) * 3) * 3 / 2);
   } else if (r1 >= 85 && r1 < 95) {
-    delay((110000 + r2) / (DATASIZE - (NUMPIXELS - 4) * 3) * 3/2);
+    delay((110000 + r2) / (DATASIZE - (NUMPIXELS - 4) * 3) * 3 / 2);
   } else {
-    delay((130000 + r2) / (DATASIZE - (NUMPIXELS - 4) * 3) * 3/2);
+    delay((130000 + r2) / (DATASIZE - (NUMPIXELS - 4) * 3) * 3 / 2);
   }
 }
 void lightLED(int int_rand, int sec_rand, int i) {
@@ -185,22 +185,45 @@ void lightLED(int int_rand, int sec_rand, int i) {
   if (bright > 255) {
     bright = 255;
   }
+  Serial.println(bright);
   pixels.setBrightness(bright);
   pixels.setPixelColor(0, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
-  if(bright > 130){//spark処理
-    int r = random(NUMPIXELS - SPARK_LIGHT_NUM, NUMPIXELS);
-    switch(r){
+  pixels.show();
+  if (bright > 150) { //spark処理
+    int r = random(7);
+    Serial.println(r);
+    switch (r) {
+      case 0:
+        pixels.setPixelColor(4, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
+        break;
+      case 1:
+        pixels.setPixelColor(5, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
+        break;
+      case 2:
+        pixels.setPixelColor(6, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
+        break;
+      case 3:
+        pixels.setPixelColor(4, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
+        pixels.setPixelColor(5, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
+        break;
       case 4:
-        pixels.setPixelColor(r, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
+        pixels.setPixelColor(5, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
+        pixels.setPixelColor(6, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
+        break;
       case 5:
-        pixels.setPixelColor(r, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
+        pixels.setPixelColor(4, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
+        pixels.setPixelColor(6, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
+        break;
       case 6:
-        pixels.setPixelColor(r, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
+        pixels.setPixelColor(4, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
+        pixels.setPixelColor(5, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
+        pixels.setPixelColor(6, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
+        break;
     }
   }
   pixels.show();
   HarfInterval(int_rand, sec_rand);
-  for(int i = 4; i < 7; i ++){
+  for (int i = 4; i < 7; i ++) {
     pixels.setPixelColor(i, 0, 0, 0);
   }
   pixels.show();
@@ -241,8 +264,8 @@ void showDate() {
   Serial.println(now.second());
 }
 
-void wifi_stop(){
+void wifi_stop() {
   WiFi.disconnect();
   WiFi.mode(WIFI_OFF);
-  WiFi.forceSleepBegin();  
+  WiFi.forceSleepBegin();
 }
