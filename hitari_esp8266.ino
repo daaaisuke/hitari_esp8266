@@ -25,14 +25,14 @@ uint ADC_Value = 0;
 bool bLux = true;
 
 void setup() {
-  Serial.begin(115200);//シリアル通信スタート
+//  Serial.begin(115200);//シリアル通信スタート
   WiFi.disconnect();
   WiFi.mode(WIFI_OFF);
   WiFi.forceSleepBegin();
   randomSeed(analogRead(0));//いるのかどうか要検証
   ledSetup(255);
   rtcSetup();
-  showDate();
+//  showDate();
   EEPROM.begin(DATASIZE);
   //  if (now.hour() >= SLEEPTIME/*2*/ && now.hour() < BOOTTIME/*21*/) { //スリープさせるかどうか判定
   ////    スリープ時間だったら
@@ -43,10 +43,10 @@ void setup() {
 
 
 void loop() {
-  showDate();
+//  showDate();
   int bright;
   int Lux = system_adc_read();
-  Serial.println(Lux);
+  //Serial.println(Lux);
   if (Lux > 600 && bLux) { //部屋が暗くなったら
     int strand = random(5);
     setFirstDelay(strand);//暗くなってから光り始めるまでの時間
@@ -114,14 +114,14 @@ void setAlarm() {
   TimeSpan diff = Alarm - now;
   if (diff.days() > 0 || diff.hours() > 0) {
     pinMode(12, INPUT_PULLUP);
-    Serial.print(" - POWER_DOWN -");
+    //Serial.print(" - POWER_DOWN -");
     delay(1000);
     ESP.deepSleep(3600 * 1000 * 1000 , RF_DISABLED);
   } else {
     unsigned int diffTS = diff.totalseconds() * 1000 * 1000 / 24 - 1 * 1000 * 1000;//起きる時刻までの秒数を指定
-    Serial.println(diffTS);
+    //Serial.println(diffTS);
     pinMode(12, INPUT_PULLUP);
-    Serial.print(" - LAST_POWER_DOWN -");
+    //Serial.print(" - LAST_POWER_DOWN -");
     delay(1000);
     ESP.deepSleep(diffTS , WAKE_RF_DEFAULT);
     delay(1000);
@@ -194,15 +194,15 @@ void fallLight() {
 
 void showDate() {
   now = rtc.now();
-  Serial.print(now.year());
-  Serial.print("/");
-  Serial.print(now.month());
-  Serial.print("/");
-  Serial.print(now.day());
-  Serial.print("/");
-  Serial.print(now.hour());
-  Serial.print("/");
-  Serial.print(now.minute());
-  Serial.print("/");
-  Serial.println(now.second());
+//  Serial.print(now.year());
+//  Serial.print("/");
+//  Serial.print(now.month());
+//  Serial.print("/");
+//  Serial.print(now.day());
+//  Serial.print("/");
+//  Serial.print(now.hour());
+//  Serial.print("/");
+//  Serial.print(now.minute());
+//  Serial.print("/");
+//  Serial.println(now.second());
 }
