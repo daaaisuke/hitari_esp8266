@@ -9,11 +9,12 @@ extern "C" {
 
 
 const int LEDPIN = 12;//LEDデジタルピン
+const int SPARKPIN = 5;
 const int RELAY_PIN = 13;///リードリレー制御ピン
 
-const int NUMPIXELS = 7;//LED個数
+const int NUMPIXELS = 4;//LED個数
 const int FALL_LIGHT_NUM = 3;
-const int SPARK_LIGHT_NUM = 3;
+const int SPARK_LIGHT_NUM = 8;
 
 const int BOOTTIME = 21;//起動時間
 const int SLEEPTIME = 2;//スリープ時間
@@ -25,8 +26,8 @@ const int DATASIZE = 1683;//EEPROMデータ数
 DateTime now;
 RTC_DS1307 rtc;
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, LEDPIN, NEO_RGB + NEO_KHZ800);
+Adafruit_NeoPixel sparks = Adafruit_NeoPixel(SPARK_LIGHT_NUM, SPARKPIN, NEO_RGB + NEO_KHZ800);
 
-//uint ADC_Value = 0;
 bool bLux = true;//連続起動制御用bool
 
 void setup() {
@@ -47,20 +48,20 @@ void setup() {
 
 void loop() {
   showDate();
+
   int bright;
   int Lux = system_adc_read();
   Serial.println(Lux);
   if (Lux > 600 && bLux) { //部屋が暗くなったら
     int strand = random(5);
     setFirstDelay(strand);//暗くなってから光り始めるまでの時間
-    //    setFirstDelay(2);
     int int_rand = random(100);//インターバル時間決定用乱数1
     int sec_rand = random(20) * 1000;//インターバル時間決定用乱数2
     for (int i = 0; i < DATASIZE - FALL_LIGHT_NUM * 3; i += 3) {//サブのLED用のデータ以外ループ
       //      lightLED(int_rand, sec_rand, i);
       lightLED(35, 0, i);
     }
-    fallLight();
+    //    fallLight();
 
     bLux = false;
   } else if (Lux < 600 && !bLux) {
@@ -71,10 +72,15 @@ void loop() {
   //      setAlarm();
   //    }
   pixels.setBrightness(0);
+  sparks.setBrightness(0);
   for (int i = 0; i < NUMPIXELS; i++) {//全LEDを落とす
     pixels.setPixelColor(i, 0, 0, 0);
   }
+  for (int i = 0; i < SPARK_LIGHT_NUM; i++) {//全LEDを落とす
+    sparks.setPixelColor(i, 0, 0, 0);
+  }
   pixels.show();
+  sparks.show();
 }
 
 
@@ -83,17 +89,23 @@ void ledSetup(int bright) {//リードリレーON&&LED消灯
   pinMode(RELAY_PIN, OUTPUT);
   digitalWrite(RELAY_PIN, HIGH);//リードリレーON
   pixels.begin();
+  sparks.begin();
   pixels.setBrightness(bright);
+  sparks.setBrightness(bright);
   for (int i = 0; i < NUMPIXELS; i++) {//全LEDを落とす
     pixels.setPixelColor(i, 0, 0, 0);
   }
+  for (int i = 0; i < SPARK_LIGHT_NUM; i++) {//全LEDを落とす
+    sparks.setPixelColor(i, 0, 0, 0);
+  }
   pixels.show();
+  sparks.show();
 }
 
 
 void rtcSetup() {
   rtc.begin();
-    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+  rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
 }
 
 
@@ -181,52 +193,33 @@ void HarfInterval(int r1, int r2) {
   }
 }
 void lightLED(int int_rand, int sec_rand, int i) {
-  int bright =  (EEPROM.read(i) + EEPROM.read(i + 1) + EEPROM.read(i + 2) * 10) / 2 + 30;
+  int bright =  (EEPROM.read(i) + EEPROM.read(i + 1) + EEPROM.read(i + 2) * 10) / 2 - 30;
   if (bright > 255) {
     bright = 255;
   }
   Serial.println(bright);
   pixels.setBrightness(bright);
   pixels.setPixelColor(0, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
-  pixels.show();
-  if (bright > 150) { //spark処理
-    int r = random(7);
-    Serial.println(r);
-    switch (r) {
-      case 0:
-        pixels.setPixelColor(4, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
-        break;
-      case 1:
-        pixels.setPixelColor(5, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
-        break;
-      case 2:
-        pixels.setPixelColor(6, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
-        break;
-      case 3:
-        pixels.setPixelColor(4, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
-        pixels.setPixelColor(5, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
-        break;
-      case 4:
-        pixels.setPixelColor(5, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
-        pixels.setPixelColor(6, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
-        break;
-      case 5:
-        pixels.setPixelColor(4, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
-        pixels.setPixelColor(6, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
-        break;
-      case 6:
-        pixels.setPixelColor(4, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
-        pixels.setPixelColor(5, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
-        pixels.setPixelColor(6, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
-        break;
+
+
+  if (bright > 90) { //spark処理
+    sparks.setBrightness(20);
+    Serial.println("発火!!!");
+    int r[SPARK_LIGHT_NUM];
+    for (int j = 0; j < sizeof(r); j++) {
+      r[j] = random(0, 4);
+      if (r[j] == 3) {
+        sparks.setPixelColor(j, EEPROM.read(i), EEPROM.read(i + 1), EEPROM.read(i + 2));
+      }
     }
   }
   pixels.show();
+  sparks.show();
   HarfInterval(int_rand, sec_rand);
-  for (int i = 4; i < 7; i ++) {
-    pixels.setPixelColor(i, 0, 0, 0);
+  for (int j = 0; j < SPARK_LIGHT_NUM; j ++) {
+    sparks.setPixelColor(j, 0, 0, 0);
   }
-  pixels.show();
+  sparks.show();
   HarfInterval(int_rand, sec_rand);
 }
 
