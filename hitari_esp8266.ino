@@ -1,4 +1,4 @@
-//#include <Adafruit_NeoPixel.h>
+#include <Adafruit_NeoPixel.h>
 #include <Wire.h>
 #include <EEPROM.h>
 #include <ESP8266WiFi.h>
@@ -26,6 +26,10 @@ DateTime rnow;
 DateTime anow;
 RTC_DS1307 rtc;
 
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, LEDPIN, NEO_RGB + NEO_KHZ800);
+Adafruit_NeoPixel sparks = Adafruit_NeoPixel(SPARK_LIGHT_NUM, SPARKPIN, NEO_RGB + NEO_KHZ800);
+
+
 bool bLux = true;//連続起動制御用bool
 
 
@@ -45,7 +49,6 @@ void setup() {
 }
 
 void loop() {
-<<<<<<< HEAD
   //====================================================================================
 
   if (hour() == SLEEPTIME) {
@@ -97,6 +100,10 @@ void loop() {
 //========================================================
 void ledSetup() {//リードリレーON&&LED消灯
   pinMode(RELAY_PIN, OUTPUT);
+  digitalWrite(RELAY_PIN, HIGH);//リードリレーON
+  pixels.begin();
+  sparks.begin();
+  digitalWrite(RELAY_PIN, LOW);
   
 }
 
